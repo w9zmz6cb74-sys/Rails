@@ -1,0 +1,8 @@
+{
+  "name": "Remix AgentRails Protocol",
+  "description": "Self-custodied crypto wallet infrastructure, ERC-6551 Agent ID identity standards, x402 micro-payment rails, and open-source SDKs for autonomous AI agents.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

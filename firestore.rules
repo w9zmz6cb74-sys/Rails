@@ -1,0 +1,15 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Agents collection: stores autonomous agent wallet configurations and policies
+    match /agents/{agentId} {
+      allow read, write: if true;
+    }
+
+    // Transactions collection: stores on-chain activity logs and cryptographic proofs
+    match /transactions/{txId} {
+      allow read, write: if true;
+    }
+  }
+}
