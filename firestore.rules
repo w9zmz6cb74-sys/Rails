@@ -11,5 +11,15 @@ service cloud.firestore {
     match /transactions/{txId} {
       allow read, write: if true;
     }
+
+    // Audit records collection: stores immutable cryptographic audit logs for the 10-step pipeline
+    match /audit_records/{auditId} {
+      allow read, write: if true;
+    }
+
+    // Pending approvals collection: stores human-in-the-loop approval queue requests
+    match /pending_approvals/{approvalId} {
+      allow read, write: if true;
+    }
   }
 }

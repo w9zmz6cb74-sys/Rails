@@ -13,12 +13,13 @@ import { MicropayView } from './components/MicropayView';
 import { SdkView } from './components/SdkView';
 import { WhitepaperView } from './components/WhitepaperView';
 import { GrantsView } from './components/GrantsView';
+import { PipelineView } from './components/PipelineView';
 import { DeployAgentModal } from './components/DeployAgentModal';
 import { validateSpendClientSide, buildOnChainTransactionRecord } from './services/policyEngine';
 import { loadAgents, persistAgents, loadTransactions, persistTransaction } from './services/firebase';
 
 export default function App() {
-  const [currentTab, setCurrentTab] = useState<string>('wallets');
+  const [currentTab, setCurrentTab] = useState<string>('pipeline');
   const [selectedChain, setSelectedChain] = useState<SupportedChain>('base-sepolia');
   const [agents, setAgents] = useState<AgentWallet[]>(INITIAL_AGENTS);
   const [transactions, setTransactions] = useState<TransactionRecord[]>(INITIAL_TRANSACTIONS);
@@ -209,6 +210,35 @@ export default function App() {
 
       {/* Main Viewport Container */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {currentTab === 'pipeline' && (
+          <PipelineView
+            agents={agents}
+            selectedChain={selectedChain}
+            onChainChange={setSelectedChain}
+            onAgentSpendConfirmed={(agentId, amountUsd) => {
+              setAgents((prev) =>
+                prev.map((a) => {
+                  if (a.id === agentId) {
+                    return {
+                      ...a,
+                      balances: {
+                        ...a.balances,
+                        usdc: Math.max(0, a.balances.usdc - amountUsd),
+                      },
+                      policy: {
+                        ...a.policy,
+                        spentTodayUsd: +(a.policy.spentTodayUsd + amountUsd).toFixed(4),
+                      },
+                      totalTransactionsExecuted: a.totalTransactionsExecuted + 1,
+                    };
+                  }
+                  return a;
+                })
+              );
+            }}
+          />
+        )}
+
         {currentTab === 'wallets' && (
           <WalletsView
             agents={agents}

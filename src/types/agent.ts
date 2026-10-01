@@ -19,6 +19,8 @@ export interface SpendPolicy {
   allowedContractAddresses: string[];
   sessionKeyExpiresAt: string; // ISO string
   allowAutonomousMicropay: boolean;
+  velocityMaxPerHour?: number;
+  velocityMaxPerMinute?: number;
 }
 
 export interface AgentWallet {
@@ -45,6 +47,159 @@ export interface AgentWallet {
   policy: SpendPolicy;
   totalTransactionsExecuted: number;
   createdAt: string;
+}
+
+export type PipelineStageId =
+  | 'agent_request'
+  | 'authenticate_session_key'
+  | 'decode_transaction'
+  | 'reject_unknown_chain_contract_function'
+  | 'check_recipient_token_allowlists'
+  | 'apply_transaction_daily_limits'
+  | 'check_velocity_expiry'
+  | 'require_human_approval'
+  | 'simulate_transaction'
+  | 'submit_erc4337_user_op'
+  | 'save_audit_record';
+
+export type PipelineStageStatus = 'pending' | 'running' | 'passed' | 'failed' | 'requires_action' | 'skipped';
+
+export interface PipelineStageResult {
+  id: PipelineStageId;
+  title: string;
+  description: string;
+  status: PipelineStageStatus;
+  latencyMs: number;
+  summary: string;
+  details?: Record<string, unknown>;
+  violations?: string[];
+}
+
+export interface DecodedCallData {
+  selector: string;
+  functionName: string;
+  signature: string;
+  contractAddress: string;
+  recipientAddress: string;
+  tokenAddress?: string;
+  tokenSymbol?: string;
+  amountFormatted?: string;
+  amountRaw?: string;
+  amountUsd: number;
+  params: Array<{ name: string; type: string; value: string }>;
+  rawCalldata: string;
+}
+
+export interface SimulationDiff {
+  success: boolean;
+  gasEstimated: number;
+  revertReason?: string;
+  assetDeltas: Array<{
+    asset: string;
+    from: string;
+    to: string;
+    amount: string;
+    amountUsd: number;
+    direction: 'in' | 'out';
+  }>;
+  stateAccessList: string[];
+  enclaveSignature?: string;
+  timestamp: string;
+}
+
+export interface UserOperation4337 {
+  sender: string;
+  nonce: number;
+  initCode: string;
+  callData: string;
+  callGasLimit: number;
+  verificationGasLimit: number;
+  preVerificationGas: number;
+  maxFeePerGas: string;
+  maxPriorityFeePerGas: string;
+  paymasterAndData: string;
+  signature: string;
+  userOpHash: string;
+  bundlerStatus: 'bundled' | 'mined' | 'failed';
+}
+
+export interface HumanApprovalItem {
+  id: string;
+  pipelineExecutionId: string;
+  agentId: string;
+  agentName: string;
+  chain: SupportedChain;
+  requestedAt: string;
+  amountUsd: number;
+  recipientAddress: string;
+  recipientName: string;
+  reason: string;
+  decodedData: DecodedCallData;
+  simulation: SimulationDiff;
+  status: 'pending' | 'approved' | 'rejected';
+  resolvedAt?: string;
+  resolvedBy?: string;
+  notes?: string;
+}
+
+export interface AuditRecord {
+  id: string;
+  timestamp: string;
+  agentId: string;
+  agentName: string;
+  chain: SupportedChain;
+  txHash: string;
+  userOpHash: string;
+  status: 'CONFIRMED' | 'BLOCKED' | 'HUMAN_REJECTED' | 'PENDING_APPROVAL';
+  totalLatencyMs: number;
+  amountUsd: number;
+  recipientAddress: string;
+  recipientName: string;
+  stages: PipelineStageResult[];
+  decodedData?: DecodedCallData;
+  simulation?: SimulationDiff;
+  userOp?: UserOperation4337;
+  humanApproval?: {
+    required: boolean;
+    approved: boolean;
+    operator: string;
+    timestamp: string;
+    reason: string;
+  };
+  merkleRoot: string;
+  enclaveSignature: string;
+}
+
+export interface AgentPipelineRequest {
+  agentId: string;
+  chain: SupportedChain;
+  sessionKeyAddress: string;
+  sessionKeySignature?: string;
+  contractAddress: string;
+  recipientAddress: string;
+  recipientName?: string;
+  amountUsd: number;
+  tokenSymbol?: string;
+  tokenAddress?: string;
+  functionCall?: string;
+  rawCalldata?: string;
+  type?: 'x402_micropay' | 'contract_call' | 'token_transfer' | 'inference_fee';
+  deadline?: number; // timestamp in ms
+}
+
+export interface PipelineExecutionResponse {
+  executionId: string;
+  success: boolean;
+  status: 'completed' | 'blocked' | 'requires_human_approval' | 'human_rejected';
+  stages: PipelineStageResult[];
+  decodedData?: DecodedCallData;
+  simulation?: SimulationDiff;
+  userOp?: UserOperation4337;
+  auditRecord?: AuditRecord;
+  approvalItem?: HumanApprovalItem;
+  txRecord?: TransactionRecord;
+  rejectionReason?: string;
+  totalLatencyMs: number;
 }
 
 export interface TransactionRecord {

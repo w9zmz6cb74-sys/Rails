@@ -1,0 +1,76 @@
+{
+  "entities": {
+    "AgentWallet": {
+      "title": "AgentWallet",
+      "description": "Autonomous crypto agent wallet with ERC-6551 TBA and policy invariants",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "chain": { "type": "string" },
+        "tbaAddress": { "type": "string" },
+        "sessionKeyAddress": { "type": "string" },
+        "status": { "type": "string" }
+      },
+      "required": ["id", "name", "chain", "tbaAddress", "sessionKeyAddress", "status"]
+    },
+    "TransactionRecord": {
+      "title": "TransactionRecord",
+      "description": "On-chain transaction execution record",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "agentId": { "type": "string" },
+        "txHash": { "type": "string" },
+        "amountUsd": { "type": "number" },
+        "status": { "type": "string" }
+      },
+      "required": ["id", "agentId", "txHash", "amountUsd", "status"]
+    },
+    "AuditRecord": {
+      "title": "AuditRecord",
+      "description": "Immutable 10-stage execution pipeline audit proof",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "agentId": { "type": "string" },
+        "txHash": { "type": "string" },
+        "userOpHash": { "type": "string" },
+        "status": { "type": "string" },
+        "totalLatencyMs": { "type": "number" }
+      },
+      "required": ["id", "agentId", "txHash", "userOpHash", "status"]
+    },
+    "HumanApprovalItem": {
+      "title": "HumanApprovalItem",
+      "description": "Human-in-the-loop pending approval request",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "agentId": { "type": "string" },
+        "amountUsd": { "type": "number" },
+        "status": { "type": "string" },
+        "reason": { "type": "string" }
+      },
+      "required": ["id", "agentId", "amountUsd", "status", "reason"]
+    }
+  },
+  "firestore": {
+    "/agents/{agentId}": {
+      "schema": "AgentWallet",
+      "description": "Stores agent wallet profiles and spend policy limits"
+    },
+    "/transactions/{txId}": {
+      "schema": "TransactionRecord",
+      "description": "Stores historical executed transactions"
+    },
+    "/audit_records/{auditId}": {
+      "schema": "AuditRecord",
+      "description": "Stores cryptographic proofs and 10-stage pipeline traces"
+    },
+    "/pending_approvals/{approvalId}": {
+      "schema": "HumanApprovalItem",
+      "description": "Stores human-in-the-loop escalation requests"
+    }
+  }
+}

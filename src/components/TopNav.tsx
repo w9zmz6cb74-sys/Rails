@@ -1,7 +1,7 @@
 import React from 'react';
 import { SupportedChain } from '../types/agent';
 import { SUPPORTED_CHAINS } from '../data/mockData';
-import { Cpu, Shield, Globe, Terminal, FileText, Award, Plus, ChevronDown } from 'lucide-react';
+import { Cpu, Shield, Globe, Terminal, FileText, Award, Plus, ChevronDown, Layers } from 'lucide-react';
 
 interface TopNavProps {
   currentTab: string;
@@ -21,6 +21,7 @@ export const TopNav: React.FC<TopNavProps> = ({
   const [chainDropdownOpen, setChainDropdownOpen] = React.useState(false);
 
   const navItems = [
+    { id: 'pipeline', label: 'Firewall Pipeline', icon: Layers },
     { id: 'wallets', label: 'Wallets & Policies', icon: Shield },
     { id: 'identity', label: 'Identity & ERC-6551', icon: Cpu },
     { id: 'x402', label: 'x402 Micropayments', icon: Globe },
